@@ -23,12 +23,13 @@ const CURRENT_USER_ID = (await prisma.user.findFirst({ where: { name: 'Sally' } 
 app.addHook("onRequest", (req, res, done) => {
   if (req.cookies.userId !== CURRENT_USER_ID) {
     req.cookies.userId = CURRENT_USER_ID
-    req.clearCookie("userId")
-    req.setCookie("userId", CURRENT_USER_ID)
+    res.clearCookie("userId")
+    res.setCookie("userId", CURRENT_USER_ID)
   }
+  done()
 })
 
-app.get('/posts', (req, res) => {
+app.get('/posts', async (req, res) => {
   return await commitToDb(prisma.post.findMany({
     select: {
       id: true,
@@ -42,3 +43,5 @@ async function commitToDb(promise) {
   if (error) return app.httpErrors.internalServerError(error.message)
   return data
 }
+
+app.listen({ port: process.env.PORT })
