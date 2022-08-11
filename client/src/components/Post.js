@@ -1,7 +1,10 @@
+import { usePostContext } from "../context/PostContext"
 
 export function Post() {
 
+  const { post } = usePostContext()
+
   return <>
-    Hello Post
+    {JSON.stringify(post)}
   </>
 }

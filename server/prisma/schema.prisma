@@ -14,20 +14,20 @@ model Post {
   id      String    @id @default(uuid())
   title   String
   body    String
-  Comment Comment[]
+  comments Comment[]
 }
 
 model User {
   id      String    @id @default(uuid())
   name    String
-  Comment Comment[]
-  Like    Like[]
+  comments Comment[]
+  likes    Like[]
 }
 
 model Comment {
   id        String    @id @default(uuid())
   message   String
-  CreatedAt DateTime  @default(now())
+  createdAt DateTime  @default(now())
   updateAt  DateTime  @updatedAt
   user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
   userId    String
