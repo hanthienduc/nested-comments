@@ -1,4 +1,4 @@
-import { createContext, useContext } from "react";
+import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAsync } from "../hooks/useAsync";
 import { getPost } from "../service/post";
@@ -15,11 +15,35 @@ export function PostProvider({ children }) {
 
   const { loading, error, value: post } = useAsync(() => getPost(id))
 
+  const [comments, setComments] = useState([])
+
+  const commentsByParentId = useMemo(() => {
+    const group = {}
+    comments.forEach(comment => {
+      group[comment.parentId] ||= []
+      group[comment.parentId].push(comment)
+    })
+    return group
+  }, [comments])
+
+  useEffect(() => {
+    if (post?.comments == null) return
+    setComments(post?.comments)
+
+  }, [post?.comments])
+
+  function getReplies(parentId) {
+    return commentsByParentId[parentId]
+  }
+
+
   return <Context.Provider value={{
     post: {
       id,
       ...post
-    }
+    },
+    rootComments: commentsByParentId[null],
+    getReplies
   }}>
 
     {loading ?
