@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom"
 import { useAsync } from "../hooks/useAsync"
-import { getPosts } from "../service/post"
+import { getPosts } from "../services/post"
 
 export function PostList() {
 

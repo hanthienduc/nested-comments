@@ -1,7 +1,7 @@
 import { createContext, useContext, useEffect, useMemo, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useAsync } from "../hooks/useAsync";
-import { getPost } from "../service/post";
+import { getPost } from "../services/post";
 
 const Context = createContext()
 
@@ -36,14 +36,25 @@ export function PostProvider({ children }) {
     return commentsByParentId[parentId]
   }
 
+  function createLocalComment(comment) {
+    setComments(prevComments => {
+      return [
+        comment,
+        ...prevComments
+      ]
+    })
+  }
+
 
   return <Context.Provider value={{
     post: {
       id,
-      ...post
+      ...post,
     },
     rootComments: commentsByParentId[null],
-    getReplies
+    getReplies,
+    createLocalComment
+
   }}>
 
     {loading ?

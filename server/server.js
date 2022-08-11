@@ -29,6 +29,19 @@ app.addHook("onRequest", (req, res, done) => {
   done()
 })
 
+const COMMENT_SELECT_FIELDS = {
+  id: true,
+  message: true,
+  parentId: true,
+  createdAt: true,
+  user: {
+    select: {
+      id: true,
+      name: true
+    }
+  }
+}
+
 app.get('/posts', async (req, res) => {
   return await commitToDb(prisma.post.findMany({
     select: {
@@ -48,24 +61,31 @@ app.get('/posts/:id', async (req, res) => {
         orderBy: {
           createdAt: 'desc',
         },
-        select: {
-          id: true,
-          message: true,
-          parentId: true,
-          createdAt: true,
-          user: {
-            select: {
-              id: true,
-              name: true
-            }
-          }
-        }
+        select: COMMENT_SELECT_FIELDS
       }
     }
   }))
 })
 
 
+app.post('/posts/:id/comments', async (req, res) => {
+  if (req.body.message === '' || req.body.message == null) {
+    return res.send(app.httpErrors.badRequest("Message is required"))
+  }
+
+  return await commitToDb(
+    prisma.comment.create({
+      data: {
+        message: req.body.message,
+        userId: req.cookies.userId,
+        postId: req.params.id,
+        parent: req.body.parentId
+      },
+      select: COMMENT_SELECT_FIELDS
+    })
+  )
+
+})
 
 
 async function commitToDb(promise) {
