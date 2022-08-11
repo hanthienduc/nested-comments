@@ -12,7 +12,7 @@ export function CommentForm({ loading, error, onSubmit, autoFocus = false, initi
   return (
     <form onSubmit={handleSubmit}>
       <div className="comment-form-row">
-        <textarea value={message} className="form-submit" autoFocus={autoFocus}
+        <textarea className='message-input' value={message} autoFocus={autoFocus}
           onChange={(e) => setMessage(e.target.value)}
         />
         <button disabled={loading} className="btn">{loading ? 'Loading... ' : 'Post'}</button>
