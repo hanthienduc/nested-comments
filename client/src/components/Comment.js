@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { FaEdit, FaHeart, FaReply, FaTrash } from 'react-icons/fa'
 import { usePostContext } from '../context/PostContext'
 import { useAsyncFunc } from '../hooks/useAsync'
-import { createComment } from '../services/comment'
+import { createComment, updateComment } from '../services/comment'
 import { CommentForm } from './CommentForm'
 import { CommentList } from './CommentList'
 import { IconBtn } from './IconBtn'
@@ -17,9 +17,11 @@ export function Comment({ id, message, user, createdAt }) {
 
   const [areChildrenHidden, setAreChildrenHidden] = useState(false)
   const [isReplying, setIsReplying] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
 
   const createCommentFn = useAsyncFunc(createComment)
-  const { getReplies, post, createLocalComment } = usePostContext()
+  const updateCommentFn = useAsyncFunc(updateComment)
+  const { getReplies, post, createLocalComment, updateLocalComment } = usePostContext()
   const childrenComments = getReplies(id)
 
   function onCommentReply(message) {
@@ -30,13 +32,28 @@ export function Comment({ id, message, user, createdAt }) {
       })
   }
 
+  function onCommentUpdate(message) {
+    return updateCommentFn.execute({ postId: post.id, message, id })
+      .then((comment) => {
+        setIsEditing(false)
+        updateLocalComment(id, comment.message)
+      })
+  }
+
   return <>
     <div className="comment">
       <div className="header">
         <span className="name">{user.name}</span>
         <span className="date">{dateFormatter.format(Date.parse(createdAt))}</span>
       </div>
-      <div className="message">{message}</div>
+      {isEditing ? (
+        <CommentForm initialValue={message}
+          loading={updateCommentFn.loading}
+          error={updateCommentFn.error}
+          onSubmit={onCommentUpdate}
+        />
+      )
+        : <div className="message">{message}</div>}
       <div className="footer">
         <IconBtn Icon={FaHeart} aria-label={'Like'} > 2 </IconBtn>
         <IconBtn Icon={FaReply}
@@ -44,7 +61,11 @@ export function Comment({ id, message, user, createdAt }) {
           isActive={isReplying}
           aria-label={isReplying ? 'Cancel Reply' : 'Reply'}
         />
-        <IconBtn Icon={FaEdit} aria-label={'Edit'} />
+        <IconBtn Icon={FaEdit}
+          onClick={() => setIsEditing(prev => !prev)}
+          isActive={isEditing}
+          aria-label={isEditing ? 'Cancel Edit' : 'Edit'}
+        />
         <IconBtn Icon={FaTrash} aria-label={'Delete'} />
       </div>
       {isReplying && (
