@@ -79,7 +79,7 @@ app.post('/posts/:id/comments', async (req, res) => {
         message: req.body.message,
         userId: req.cookies.userId,
         postId: req.params.id,
-        parent: req.body.parentId
+        parentId: req.body.parentId
       },
       select: COMMENT_SELECT_FIELDS
     })
