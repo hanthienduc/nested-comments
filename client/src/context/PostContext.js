@@ -62,7 +62,6 @@ export function PostProvider({ children }) {
     })
   }
 
-
   return <Context.Provider value={{
     post: {
       id,
