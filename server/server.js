@@ -61,10 +61,35 @@ app.get('/posts/:id', async (req, res) => {
         orderBy: {
           createdAt: 'desc',
         },
-        select: COMMENT_SELECT_FIELDS
+        select: {
+          ...COMMENT_SELECT_FIELDS,
+          _count: { select: { likes: true } }
+        }
       }
     }
-  }))
+  }).then(async post => {
+    const likes = await prisma.like.findMany({
+      where: {
+        userId: req.cookies.userId,
+        commentId: { in: post.comments.map(comment => comment.id) }
+      }
+    })
+
+    return {
+      ...post,
+      comments: post.comments.map(comment => {
+        const { _count, ...commentFields } = comment
+        return {
+          ...commentFields,
+          likedByMe: likes.find(like => like.commentId === comment.id),
+          likeCount: _count.likes
+        }
+      })
+    }
+  })
+
+  )
+
 })
 
 
@@ -82,6 +107,12 @@ app.post('/posts/:id/comments', async (req, res) => {
         parentId: req.body.parentId
       },
       select: COMMENT_SELECT_FIELDS
+    }).then(comment => {
+      return {
+        ...comment,
+        likeCount: 0,
+        likedByMe: false
+      }
     })
   )
 
