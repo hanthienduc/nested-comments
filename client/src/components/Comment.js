@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { FaEdit, FaHeart, FaReply, FaTrash } from 'react-icons/fa'
 import { usePostContext } from '../context/PostContext'
 import { useAsyncFunc } from '../hooks/useAsync'
-import { createComment, updateComment } from '../services/comment'
+import { createComment, updateComment, deleteComment } from '../services/comment'
 import { CommentForm } from './CommentForm'
 import { CommentList } from './CommentList'
 import { IconBtn } from './IconBtn'
@@ -21,7 +21,8 @@ export function Comment({ id, message, user, createdAt }) {
 
   const createCommentFn = useAsyncFunc(createComment)
   const updateCommentFn = useAsyncFunc(updateComment)
-  const { getReplies, post, createLocalComment, updateLocalComment } = usePostContext()
+  const deleteCommentFn = useAsyncFunc(deleteComment)
+  const { getReplies, post, createLocalComment, updateLocalComment, deleteLocalComment } = usePostContext()
   const childrenComments = getReplies(id)
 
   function onCommentReply(message) {
@@ -39,6 +40,15 @@ export function Comment({ id, message, user, createdAt }) {
         updateLocalComment(id, comment.message)
       })
   }
+
+  function onCommentDelete() {
+    return deleteCommentFn.execute({ postId: post.id, id })
+      .then((comment) => {
+        deleteLocalComment(comment.id)
+      })
+  }
+
+
 
   return <>
     <div className="comment">
@@ -66,7 +76,10 @@ export function Comment({ id, message, user, createdAt }) {
           isActive={isEditing}
           aria-label={isEditing ? 'Cancel Edit' : 'Edit'}
         />
-        <IconBtn Icon={FaTrash} aria-label={'Delete'} />
+        <IconBtn Icon={FaTrash} aria-label={'Delete'}
+          disabled={deleteCommentFn.loading}
+          onClick={onCommentDelete}
+        />
       </div>
       {isReplying && (
         <div className='mt-1 ml-3'>
